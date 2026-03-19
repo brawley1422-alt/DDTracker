@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DD Programs">
+<title>DD Programs '26</title>
+<style>
+:root {
+  --bg: #0a0d14;
+  --bg2: #12161f;
+  --bg3: #1a1f2e;
+  --border: #232d42;
+  --text: #c8d8f0;
+  --muted: #4a5c7a;
+  --white: #eef4ff;
+  --amber: #f0a500;
+  --green: #22c55e;
+  --blue: #60a5fa;
+  --purple: #a78bfa;
+  --pink: #f472b6;
+  --red: #f87171;
+  --tab-h: 56px;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ── LAYOUT SHELL ── */
+#shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  padding-top: var(--sat);
+}
+
+/* ── TOP NAV ── */
+#topnav {
+  flex-shrink: 0;
+  background: rgba(10,13,20,0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 12px 16px 8px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.nav-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.nav-title em { font-style: normal; color: var(--amber); }
+
+.nav-subtitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-top: 2px;
+  letter-spacing: 0.3px;
+}
+
+.nav-stats {
+  display: flex;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.nstat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: var(--bg3);
+  border-radius: 20px;
+  border: 0.5px solid var(--border);
+}
+
+.nstat-val {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.nstat-val.a { color: var(--amber); }
+.nstat-val.g { color: var(--green); }
+
+.nstat-lbl {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* ── FILTER CHIPS ── */
+#chips {
+  flex-shrink: 0;
+  display: flex;
+  gap: 7px;
+  padding: 10px 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--bg);
+  scrollbar-width: none;
+}
+#chips::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.chip.on { background: var(--amber); border-color: var(--amber); color: #050300; }
+
+/* ── SCROLL AREA ── */
+#scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding: 0 12px calc(var(--tab-h) + var(--sab) + 16px);
+}
+
+/* ── SECTION HEADER ── */
+.sec-head {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 18px 4px 8px;
+}
+
+/* ── PROGRAM CARD ── */
+.card {
+  background: var(--bg2);
+  border-radius: 14px;
+  border: 0.5px solid var(--border);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.card-accent {
+  height: 3px;
+}
+
+.card-header {
+  padding: 12px 14px 10px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.card-top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--white);
+  line-height: 1.2;
+  flex: 1;
+}
+
+.card-sub-text {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.b-wbc    { background: rgba(96,165,250,.12); color: #93c5fd; }
+.b-xp     { background: rgba(240,165,0,.12);  color: var(--amber); }
+.b-affinity { background: rgba(167,139,250,.12); color: var(--purple); }
+.b-themed { background: rgba(244,114,182,.12); color: var(--pink); }
+.b-multi  { background: rgba(34,197,94,.12);   color: var(--green); }
+.b-corner { background: rgba(251,146,60,.12);  color: #fb923c; }
+
+/* PROGRESS */
+.prog-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.prog-cur  { font-size: 13px; font-weight: 600; color: var(--white); font-variant-numeric: tabular-nums; }
+.prog-max  { font-size: 11px; color: var(--muted); }
+.prog-pct  { font-size: 18px; font-weight: 700; color: var(--amber); font-variant-numeric: tabular-nums; }
+
+.track {
+  height: 5px;
+  background: var(--bg3);
+  border-radius: 3px;
+  overflow: visible;
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+.tick {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 11px;
+  background: var(--bg2);
+  border-radius: 1px;
+  transform: translateX(-50%);
+}
+
+/* REWARD PILLS */
+.rewards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.rw {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  border: 0.5px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+}
+.rw.hit { background: rgba(34,197,94,.08); border-color: rgba(34,197,94,.3); color: var(--green); }
+.rw.next { border-color: var(--amber); color: var(--amber); }
+.rw-ovr { font-size: 12px; font-weight: 700; }
+.rw.diamond .rw-ovr { color: var(--purple); }
+.rw.gold    .rw-ovr { color: var(--amber); }
+.rw.rd      .rw-ovr { color: var(--pink); }
+.rw.hit     .rw-ovr { color: var(--green); }
+
+/* EXPAND TOGGLE */
+.card-expand-btn {
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.expand-label { display: flex; align-items: center; gap: 6px; }
+.expand-count {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  background: var(--bg3);
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 0.5px solid var(--border);
+}
+.expand-chevron {
+  transition: transform 0.2s;
+  font-size: 11px;
+}
+.expand-chevron.open { transform: rotate(180deg); }
+
+/* MISSIONS */
+.missions-wrap {
+  display: none;
+  border-top: 0.5px solid var(--border);
+}
+.missions-wrap.open { display: block; }
+
+.mg {
+  padding: 10px 14px 6px;
+  border-bottom: 0.5px solid var(--border);
+}
+.mg:last-child { border-bottom: none; }
+
+.mg-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* MISSION ROW — big touch targets */
+.mission {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--border);
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  user-select: none;
+  min-height: 44px;
+}
+.mission:last-child { border-bottom: none; }
+.mission.dm .m-lbl { text-decoration: line-through; color: var(--muted); }
+
+.m-chk {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  background: var(--bg3);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.mission.dm .m-chk { background: var(--green); border-color: var(--green); }
+
+.m-lbl {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.m-pts {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--amber);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.m-rep {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--blue);
+  background: rgba(96,165,250,.1);
+  padding: 2px 5px;
+  border-radius: 4px;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+
+/* XP MANUAL INPUT */
+.xp-section {
+  padding: 12px 14px;
+  border-top: 0.5px solid var(--border);
+}
+
+.xp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.xp-in {
+  font-size: 15px;
+  font-weight: 600;
+  font-family: -apple-system, system-ui;
+  width: 120px;
+  padding: 8px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--white);
+  outline: none;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  -webkit-appearance: none;
+}
+.xp-in:focus { border-color: var(--amber); }
+
+.xp-lbl { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+.quick-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.qb {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 7px 13px;
+  border-radius: 8px;
+  border: 0.5px solid var(--border);
+  background: var(--bg3);
+  color: var(--muted);
+  cursor: pointer;
+  min-height: 34px;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.qb:active { background: var(--border); }
+
+/* NOTES */
+.notes-section {
+  padding: 10px 14px 12px;
+  border-top: 0.5px solid var(--border);
+}
+
+.notes-in {
+  width: 100%;
+  font-size: 13px;
+  font-family: -apple-system, system-ui;
+  padding: 8px 10px;
+  background: var(--bg3);
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  outline: none;
+  resize: none;
+  height: 36px;
+  -webkit-appearance: none;
+  transition: height 0.2s;
+}
+.notes-in:focus { height: 64px; border-color: var(--border); }
+.notes-in::placeholder { color: var(--muted); }
+
+/* ── BOTTOM TAB BAR ── */
+#tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--tab-h) + var(--sab));
+  background: rgba(10,13,20,0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid var(--border);
+  display: flex;
+  padding-bottom: var(--sab);
+  z-index: 100;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color 0.15s;
+  -webkit-touch-callout: none;
+  user-select: none;
+  min-height: 44px;
+}
+.tab.on { color: var(--amber); }
+
+.tab-icon { font-size: 20px; line-height: 1; }
+.tab-lbl { font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
+
+/* CHECK MARK SVG */
+.chk-svg { display: none; }
+.mission.dm .chk-svg { display: block; }
+</style>
+</head>
+<body>
+
+<div id="shell">
+
+  <!-- TOP NAV -->
+  <div id="topnav">
+    <div class="nav-title">DD <em>Programs</em></div>
+    <div class="nav-stats">
+      <div class="nstat"><span class="nstat-val a" id="h-prog">0</span><span class="nstat-lbl">programs</span></div>
+      <div class="nstat"><span class="nstat-val g" id="h-done">0</span><span class="nstat-lbl">complete</span></div>
+      <div class="nstat"><span class="nstat-val" id="h-miss">0</span><span class="nstat-lbl">missions ✓</span></div>
+    </div>
+  </div>
+
+  <!-- FILTER CHIPS -->
+  <div id="chips">
+    <div class="chip on" onclick="setF('all',this)">All</div>
+    <div class="chip" onclick="setF('wbc',this)">WBC</div>
+    <div class="chip" onclick="setF('xp',this)">XP Path</div>
+    <div class="chip" onclick="setF('affinity',this)">Team Affinity</div>
+    <div class="chip" onclick="setF('themed',this)">Themed</div>
+    <div class="chip" onclick="setF('multi',this)">Multiplayer</div>
+    <div class="chip" onclick="setF('incomplete',this)">In Progress</div>
+  </div>
+
+  <!-- SCROLL AREA -->
+  <div id="scroll"></div>
+
+</div>
+
+<!-- BOTTOM TAB BAR -->
+<div id="tabbar">
+  <div class="tab on" onclick="setF('all',null)">
+    <div class="tab-icon">🏆</div>
+    <div class="tab-lbl">Programs</div>
+  </div>
+  <div class="tab" onclick="setF('wbc',null)">
+    <div class="tab-icon">🌎</div>
+    <div class="tab-lbl">WBC</div>
+  </div>
+  <div class="tab" onclick="setF('xp',null)">
+    <div class="tab-icon">⚡</div>
+    <div class="tab-lbl">XP Path</div>
+  </div>
+  <div class="tab" onclick="setF('affinity',null)">
+    <div class="tab-icon">🧢</div>
+    <div class="tab-lbl">Team</div>
+  </div>
+  <div class="tab" onclick="setF('incomplete',null)">
+    <div class="tab-icon">📋</div>
+    <div class="tab-lbl">Active</div>
+  </div>
+</div>
+
+<script>
+const PSM=[
+  {id:'s1',label:'Tally 30 IP with WBC Series cards',pts:3},
+  {id:'s2',label:'Tally 60 K with WBC Series cards',pts:3},
+  {id:'s3',label:'Tally 50 hits with WBC Series cards',pts:3},
+  {id:'s4',label:'Tally 30 XBH with WBC Series cards',pts:3},
+  {id:'s5',label:'Tally 20 HR with WBC Series cards',pts:3},
+];
+
+const PROGS=[
+{id:'wbc-a',name:'WBC Pool A',type:'wbc',max:100,unit:'pts',sub:'Cuba · Panama · Puerto Rico · Canada · Colombia',
+rewards:[{l:'Stadium: Hiram Bithorn',p:5,r:'gold'},{l:'80 Camargo',p:10,r:'gold'},{l:'81 Despaigne',p:20,r:'gold'},{l:'82 Seth Lugo',p:30,r:'gold'},{l:'83 Caissie',p:40,r:'gold'},{l:'84 Urshela',p:50,r:'gold'},{l:'WBC Gold Pack',p:55,r:'gold'},{l:'85 Almeida',p:60,r:'diamond'},{l:'86 Tejada',p:70,r:'diamond'},{l:'87 Paxton',p:80,r:'diamond'},{l:'88 Alexei Ramirez',p:90,r:'diamond'},{l:'89 Nolan Arenado',p:100,r:'diamond'}],
+groups:[
+  {lbl:'Moments & Showdown',ms:[{id:'mom',label:'Complete 10 Moments (3 pts each)',pts:30},{id:'show',label:'Complete WBC Showdown',pts:10}]},
+  {lbl:'WBC Series Missions',ms:PSM},
+  {lbl:'PXP Missions (Repeatable)',ms:[{id:'pxp1',label:'2,000 PXP with Camargo, Despaigne, Lugo, Caissie & Urshela',pts:4,rep:true},{id:'pxp2',label:'2,000 PXP with Almeida, Tejada, Paxton & Ramirez',pts:4,rep:true}]},
+  {lbl:'Player Missions',ms:[{id:'p1',label:'Tally 3 hits with 80 OVR Camargo',pts:4},{id:'p2',label:'Tally 2 XBH with 81 OVR Despaigne',pts:4},{id:'p3',label:'Tally 10 K with 82 OVR Seth Lugo',pts:4},{id:'p4',label:'Get on base 3× with 83 OVR Caissie',pts:4},{id:'p5',label:'Tally 2 XBH with 84 OVR Urshela',pts:4},{id:'p6',label:'Tally 5 IP with 85 OVR Almeida',pts:4},{id:'p7',label:'Tally 5 hits with 86 OVR Tejada',pts:4},{id:'p8',label:'Tally 2 wins with 87 OVR Paxton',pts:4},{id:'p9',label:'Tally 3 XBH with 88 OVR Alexei Ramirez',pts:4}]},
+]},
+{id:'wbc-b',name:'WBC Pool B',type:'wbc',max:100,unit:'pts',sub:'Brazil · Mexico · Italy · Great Britain · USA',
+rewards:[{l:'WBC Uniform x2',p:5,r:'gold'},{l:'80 Bichette Jr.',p:10,r:'gold'},{l:'81 Rowdy Tellez',p:20,r:'gold'},{l:'82 Andrew Fischer',p:30,r:'gold'},{l:'83 Trayce Thompson',p:40,r:'gold'},{l:'84 Gunnar Henderson',p:50,r:'gold'},{l:'WBC Gold Pack',p:55,r:'gold'},{l:'85 J. Contreras',p:60,r:'diamond'},{l:'86 V. Worley',p:70,r:'diamond'},{l:'87 Caglianone',p:80,r:'diamond'},{l:'88 Arozarena',p:90,r:'diamond'},{l:'89 Bryce Harper',p:100,r:'diamond'}],
+groups:[
+  {lbl:'Moments & Showdown',ms:[{id:'mom',label:'Complete 10 Moments (3 pts each)',pts:30},{id:'show',label:'Complete WBC Showdown',pts:10}]},
+  {lbl:'WBC Series Missions',ms:PSM},
+  {lbl:'PXP Missions (Repeatable)',ms:[{id:'pxp1',label:'2,000 PXP with Bichette Jr., Tellez, Fischer, Thompson & Henderson',pts:4,rep:true},{id:'pxp2',label:'2,000 PXP with Contreras, Worley, Caglianone & Arozarena',pts:4,rep:true}]},
+  {lbl:'Player Missions',ms:[{id:'p1',label:'Get on base 3× with 80 OVR Bichette Jr.',pts:4},{id:'p2',label:'Tally 2 XBH with 81 OVR Rowdy Tellez',pts:4},{id:'p3',label:'Tally 3 hits with 82 OVR Andrew Fischer',pts:4},{id:'p4',label:'Get on base 3× with 83 OVR Trayce Thompson',pts:4},{id:'p5',label:'Tally 2 XBH with 84 OVR Gunnar Henderson',pts:4},{id:'p6',label:'Tally 10 K with 85 OVR J. Contreras',pts:4},{id:'p7',label:'Tally 2 wins with 86 OVR Vance Worley',pts:4},{id:'p8',label:'Tally 3 XBH with 87 OVR Caglianone',pts:4},{id:'p9',label:'Get on base 5× with 88 OVR Arozarena',pts:4}]},
+]},
+{id:'wbc-c',name:'WBC Pool C',type:'wbc',max:100,unit:'pts',sub:'Czechia · Australia · Chinese Taipei · Korea · Japan',
+rewards:[{l:'Stadium: Tokyo Dome',p:5,r:'gold'},{l:'80 Cervinka',p:10,r:'gold'},{l:'81 R. Perkins',p:20,r:'gold'},{l:'82 Giljegiljaw',p:30,r:'gold'},{l:'83 Jung Hoo Lee',p:40,r:'gold'},{l:'84 Teruaki Sato',p:50,r:'gold'},{l:'WBC Gold Pack',p:55,r:'gold'},{l:'85 Martin Muzik',p:60,r:'diamond'},{l:'86 M. Yoshida',p:70,r:'diamond'},{l:'87 An-Ko Lin',p:80,r:'diamond'},{l:'88 Travis Bazzana',p:90,r:'diamond'},{l:'89 Hyun-Min Ahn',p:100,r:'diamond'}],
+groups:[
+  {lbl:'Moments & Showdown',ms:[{id:'mom',label:'Complete 10 Moments (3 pts each)',pts:30},{id:'show',label:'Complete WBC Showdown',pts:10}]},
+  {lbl:'WBC Series Missions',ms:PSM},
+  {lbl:'PXP Missions (Repeatable)',ms:[{id:'pxp1',label:'2,000 PXP with Cervinka, Perkins, Giljegiljaw, Lee & Sato',pts:4,rep:true},{id:'pxp2',label:'2,000 PXP with Muzik, Yoshida, Lin & Bazzana',pts:4,rep:true}]},
+  {lbl:'Player Missions',ms:[{id:'p1',label:'Tally 3 hits with 80 OVR Cervinka',pts:4},{id:'p2',label:'Get on base 3× with 81 OVR R. Perkins',pts:4},{id:'p3',label:'Tally 2 XBH with 82 OVR Giljegiljaw',pts:4},{id:'p4',label:'Get on base 3× with 83 OVR Jung Hoo Lee',pts:4},{id:'p5',label:'Tally 2 XBH with 84 OVR Teruaki Sato',pts:4},{id:'p6',label:'Tally 5 hits with 85 OVR Martin Muzik',pts:4},{id:'p7',label:'Tally 3 XBH with 86 OVR M. Yoshida',pts:4},{id:'p8',label:'Tally 3 XBH with 87 OVR An-Ko Lin',pts:4},{id:'p9',label:'Get on base 5× with 88 OVR Travis Bazzana',pts:4}]},
+]},
+{id:'wbc-d',name:'WBC Pool D',type:'wbc',max:100,unit:'pts',sub:'Nicaragua · Netherlands · Israel · Venezuela · DR',
+rewards:[{l:'WBC Uniform x2',p:5,r:'gold'},{l:'80 Hebbert',p:10,r:'gold'},{l:'81 Druw Jones',p:20,r:'gold'},{l:'82 S. Horwitz',p:30,r:'gold'},{l:'83 E. Tovar',p:40,r:'gold'},{l:'84 S. Alcantara',p:50,r:'gold'},{l:'WBC Gold Pack',p:55,r:'gold'},{l:'85 Juan Soto',p:60,r:'diamond'},{l:'86 H. Bader',p:70,r:'diamond'},{l:'87 Mark Vientos',p:80,r:'diamond'},{l:'88 J. Chourio',p:90,r:'diamond'},{l:'89 Didi Gregorius',p:100,r:'diamond'}],
+groups:[
+  {lbl:'Moments & Showdown',ms:[{id:'mom',label:'Complete 10 Moments (3 pts each)',pts:30},{id:'show',label:'Complete WBC Showdown',pts:10}]},
+  {lbl:'WBC Series Missions',ms:PSM},
+  {lbl:'PXP Missions (Repeatable)',ms:[{id:'pxp1',label:'2,000 PXP with Hebbert, Jones, Horwitz, Tovar & Alcantara',pts:4,rep:true},{id:'pxp2',label:'2,000 PXP with Soto, Bader, Vientos & Chourio',pts:4,rep:true}]},
+  {lbl:'Player Missions',ms:[{id:'p1',label:'Tally 3 hits with 80 OVR Duque Hebbert',pts:4},{id:'p2',label:'Tally 2 XBH with 81 OVR Druw Jones',pts:4},{id:'p3',label:'Tally 10 K with 82 OVR S. Horwitz',pts:4},{id:'p4',label:'Get on base 3× with 83 OVR E. Tovar',pts:4},{id:'p5',label:'Tally 2 XBH with 84 OVR S. Alcantara',pts:4},{id:'p6',label:'Tally 5 IP with 85 OVR Juan Soto',pts:4},{id:'p7',label:'Tally 5 hits with 86 OVR H. Bader',pts:4},{id:'p8',label:'Tally 2 wins with 87 OVR Mark Vientos',pts:4},{id:'p9',label:'Tally 3 XBH with 88 OVR J. Chourio',pts:4}]},
+]},
+{id:'wbc-finals',name:'WBC Finals',type:'wbc',max:100,unit:'pts',sub:'Complete all 4 pools for 50 bonus points',
+rewards:[{l:'85 Weissert',p:10,r:'diamond'},{l:'85 Jeter Downs',p:20,r:'diamond'},{l:'86 Aldegheri',p:40,r:'diamond'},{l:'87 Alek Thomas',p:50,r:'diamond'},{l:'88 Hernaiz',p:60,r:'diamond'},{l:'88 Angel Zerpa',p:70,r:'diamond'},{l:'89 L. Ramirez',p:90,r:'diamond'},{l:'89 E. Rodriguez',p:100,r:'diamond'}],
+groups:[
+  {lbl:'Moments',ms:[{id:'mom',label:'Complete 26 Moments (2 pts each)',pts:52}]},
+  {lbl:'Stat Missions',ms:[{id:'s1',label:'Tally 20 IP with WBC Series players',pts:10},{id:'s2',label:'Tally 40 K with WBC Series players',pts:10},{id:'s3',label:'Tally 40 hits with WBC Series players',pts:10},{id:'s4',label:'Tally 25 XBH with WBC Series players',pts:10},{id:'s5',label:'Tally 15 HR with WBC Series players',pts:10}]},
+  {lbl:'Bonus Collections (10 pts each)',ms:[{id:'b1',label:'Collect 89 OVR WBC Nolan Arenado (Pool A)',pts:10},{id:'b2',label:'Collect 89 OVR WBC Bryce Harper (Pool B)',pts:10},{id:'b3',label:'Collect 89 OVR WBC Hyun-Min Ahn (Pool C)',pts:10},{id:'b4',label:'Collect 89 OVR WBC Didi Gregorius (Pool D)',pts:10},{id:'b5',label:'Collect 88 OVR WBC Alex Bregman (Mini Seasons)',pts:10}]},
+]},
+{id:'xp-1',name:'1st Inning XP Path',type:'xp',max:500000,unit:'xp',sub:'Expires April 10, 2026',
+rewards:[{l:'88 Torres',p:55000,r:'diamond'},{l:'89 Schwarber',p:140000,r:'diamond'},{l:'90 Yamamoto',p:275000,r:'diamond'},{l:'Boss Choice',p:500000,r:'rd'}],
+groups:[
+  {lbl:'Best XP grind methods',ms:[{id:'x1',label:'WBC Mini Seasons — 7 games, earns packs + XP'},{id:'x2',label:'Play vs CPU with Homer Haven stadium (search username: GomesDaLegend)'},{id:'x3',label:'Conquest maps — grab hidden rewards day of release'},{id:'x4',label:'Diamond Quest — great XP and sellable card rewards'},{id:'x5',label:'Multiplayer games grant bonus XP via MP Program'}]},
+]},
+{id:'st-pats',name:"St. Patrick's Day",type:'themed',max:100,unit:'pts',sub:'Gold players + green/orange themed teams',
+rewards:[{l:'87 OVR Choice',p:40,r:'diamond'},{l:'89 OVR Choice',p:70,r:'diamond'},{l:'90 OVR Soriano',p:100,r:'diamond'}],
+groups:[
+  {lbl:'Missions',ms:[{id:'m1',label:'Complete Pot of Gold Missions using Gold players',pts:40},{id:'m2',label:'Complete St. Pats Missions with green & orange themed teams',pts:40},{id:'m3',label:'Reach 100 pts for 90 OVR Alfonso Soriano',pts:20}]},
+]},
+{id:'mazeroski',name:'Bill Mazeroski',type:'themed',max:100,unit:'pts',sub:'2B · Pittsburgh Pirates HOF · 85 OVR reward',
+rewards:[{l:'Stubs + Packs',p:40,r:'gold'},{l:'85 OVR Mazeroski',p:100,r:'diamond'}],
+groups:[{lbl:'Missions',ms:[{id:'m1',label:'Complete Mazeroski Moments',pts:50},{id:'m2',label:'Complete Mazeroski Missions',pts:50}]}]},
+{id:'multi',name:'Multiplayer Program',type:'multi',max:30000,unit:'pts',sub:'Chase: Julio Rodríguez · Chained hidden missions',
+rewards:[{l:'Packs + Stubs',p:5000,r:'gold'},{l:'Choice Pack',p:12000,r:'diamond'},{l:'90 OVR Choice',p:22000,r:'diamond'},{l:'Chase: J-Rod',p:30000,r:'rd'}],
+groups:[{lbl:'Earn points',ms:[{id:'m1',label:'Win Ranked Season games'},{id:'m2',label:'Win Battle Royale games (Flawless = 50k Stubs voucher)'},{id:'m3',label:'Complete Events when active'},{id:'m4',label:'Complete chained hidden missions (reveal one at a time)'}]}]},
+{id:'corner-1',name:'Cornerstone Wave 1',type:'corner',max:2000,unit:'pts',sub:'~20 min · No specific player needed',
+rewards:[{l:'Stubs + Packs',p:1000,r:'gold'},{l:'XP Reward',p:2000,r:'gold'}],
+groups:[{lbl:'Missions',ms:[{id:'c1',label:'Complete Cornerstone Moments',pts:1000},{id:'c2',label:'Complete Cornerstone Missions',pts:1000}]}]},
+...['Angels','Astros','Athletics','Blue Jays','Braves','Brewers','Cardinals','Cubs','Diamondbacks','Dodgers','Giants','Guardians','Mariners','Marlins','Mets','Nationals','Orioles','Padres','Phillies','Pirates','Rangers','Rays','Red Sox','Reds','Rockies','Royals','Tigers','Twins','White Sox','Yankees'].map(t=>({
+  id:'ta-'+t.toLowerCase().replace(/\s/g,'-'),name:t+' Affinity',type:'affinity',max:8000,unit:'xp',
+  sub:'Earn Jolt Series Captains for the '+t,
+  rewards:[{l:'Gold Hitter',p:2000,r:'gold'},{l:'Gold Pitcher',p:4000,r:'gold'},{l:'88 OVR Hit Capt.',p:6000,r:'diamond'},{l:'88 OVR Pit Capt.',p:8000,r:'diamond'}],
+  groups:[{lbl:'Earn TA points',ms:[{id:'ta1',label:'Use '+t+' players in any DD mode'},{id:'ta2',label:'Complete '+t+'-specific Moments'},{id:'ta3',label:'Earn PXP with '+t+' Jolt Captains'}]}]
+})),
+];
+
+const AC={wbc:'#60a5fa',xp:'#f0a500',affinity:'#a78bfa',themed:'#f472b6',multi:'#22c55e',corner:'#fb923c'};
+const TL={wbc:'WBC',xp:'XP Path',affinity:'Team Affinity',themed:'Themed',multi:'Multiplayer',corner:'Cornerstone'};
+const CHK=`<svg class="chk-svg" width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const NF=n=>Number(n).toLocaleString();
+const NS=n=>n>=1000?(n>=100000?(n/1000).toFixed(0)+'k':(n/1000).toFixed(1)+'k'):String(n);
+
+let checked=JSON.parse(localStorage.getItem('ddp26c')||'{}');
+let xpv=JSON.parse(localStorage.getItem('ddp26x')||'{}');
+let notes=JSON.parse(localStorage.getItem('ddp26n')||'{}');
+let expanded=JSON.parse(localStorage.getItem('ddp26e')||'{}');
+let filter='all';
+const save=()=>{localStorage.setItem('ddp26c',JSON.stringify(checked));localStorage.setItem('ddp26x',JSON.stringify(xpv));localStorage.setItem('ddp26n',JSON.stringify(notes));localStorage.setItem('ddp26e',JSON.stringify(expanded));};
+
+function calcProg(p){
+  if(p.unit==='xp') return Math.min(xpv[p.id]||0,p.max);
+  let t=0;for(const g of p.groups)for(const m of g.ms)if(m.pts&&checked[p.id+'|'+m.id])t+=m.pts;
+  return Math.min(t,p.max);
+}
+const isDone=p=>calcProg(p)>=p.max;
+
+function renderCard(p){
+  const cur=calcProg(p),pct=Math.min(100,Math.round(cur/p.max*100)),done=isDone(p),ac=AC[p.type]||'#60a5fa';
+  const isExp=expanded[p.id];
+
+  const ticks=p.rewards.map(r=>`<div class="tick" style="left:${Math.round(r.p/p.max*100)}%"></div>`).join('');
+  const firstNext=p.rewards.find(r=>Math.round(r.p/p.max*100)>pct);
+  const rws=p.rewards.map(r=>{
+    const rp=Math.round(r.p/p.max*100),hit=pct>=rp,nxt=firstNext&&r.p===firstNext.p;
+    const parts=r.l.split(' ');
+    return `<div class="rw ${r.r} ${hit?'hit':''} ${nxt?'next':''}"><span class="rw-ovr">${parts[0]}</span><span>${parts.slice(1).join(' ')}</span></div>`;
+  }).join('');
+
+  // Mission content
+  let missContent='';
+  const totalMissions=p.groups.reduce((a,g)=>a+g.ms.filter(m=>m.pts).length,0);
+  const doneMissions=p.groups.reduce((a,g)=>a+g.ms.filter(m=>m.pts&&checked[p.id+'|'+m.id]).length,0);
+
+  if(p.unit==='xp'&&p.id!=='xp-1'){
+    missContent=`<div class="xp-section">
+      <div class="xp-row">
+        <input class="xp-in" type="number" inputmode="numeric" min="0" max="${p.max}" value="${xpv[p.id]||0}" placeholder="0" oninput="setXP('${p.id}',this.value)">
+        <span class="xp-lbl">/ ${NF(p.max)} XP</span>
+      </div>
+      <div class="quick-row">
+        <button class="qb" onclick="addXP('${p.id}',1000)">+1k</button>
+        <button class="qb" onclick="addXP('${p.id}',2000)">+2k</button>
+        <button class="qb" onclick="addXP('${p.id}',4000)">+4k</button>
+        <button class="qb" onclick="setXP('${p.id}',${p.max})" style="color:var(--green)">Max</button>
+        <button class="qb" onclick="setXP('${p.id}',0)" style="color:var(--red)">Reset</button>
+      </div>
+    </div>`;
+  } else if(p.id==='xp-1'){
+    const xp=xpv['xp-1']||0;
+    missContent=p.groups.map(g=>`<div class="mg"><div class="mg-lbl">${g.lbl}</div>${g.ms.map(m=>{const k=p.id+'|'+m.id,c=checked[k];return`<div class="mission ${c?'dm':''}" onclick="toggle('${p.id}','${m.id}')"><div class="m-chk">${c?CHK:''}</div><div class="m-lbl">${m.label}</div></div>`;}).join('')}</div>`).join('')
+    +`<div class="xp-section">
+      <div class="xp-row">
+        <input class="xp-in" type="number" inputmode="numeric" min="0" max="500000" value="${xp}" placeholder="0" oninput="setXP('xp-1',this.value)">
+        <span class="xp-lbl">/ 500k XP</span>
+      </div>
+      <div class="quick-row">
+        <button class="qb" onclick="addXP('xp-1',10000)">+10k</button>
+        <button class="qb" onclick="addXP('xp-1',25000)">+25k</button>
+        <button class="qb" onclick="addXP('xp-1',50000)">+50k</button>
+        <button class="qb" style="color:var(--muted);font-size:10px">Exp Apr 10</button>
+      </div>
+    </div>`;
+  } else {
+    missContent=p.groups.map(g=>`<div class="mg"><div class="mg-lbl">${g.lbl}</div>${g.ms.map(m=>{const k=p.id+'|'+m.id,c=checked[k],hp=!!m.pts;return`<div class="mission ${c?'dm':''}" onclick="${hp?`toggle('${p.id}','${m.id}')`:''}" style="${!hp?'cursor:default':''}"><div class="m-chk">${c?CHK:''}</div><div class="m-lbl">${m.label}${m.rep?'<span class="m-rep">REPEATABLE</span>':''}</div>${hp?`<div class="m-pts">+${m.pts}pts</div>`:''}</div>`;}).join('')}</div>`).join('');
+  }
+
+  const note=notes[p.id]||'';
+  const expandLabel=totalMissions>0?`${doneMissions}/${totalMissions} missions`:'Tap to expand';
+
+  return `<div class="card ${done?'done':''}" id="card-${p.id}">
+    <div class="card-header">
+      <div class="card-accent" style="background:${ac}"></div>
+      <div class="card-top-row">
+        <div>
+          <div class="card-name">${p.name}</div>
+          ${p.sub?`<div class="card-sub-text">${p.sub}</div>`:''}
+        </div>
+        <span class="badge b-${p.type}">${TL[p.type]}</span>
+      </div>
+      <div class="prog-row">
+        <span class="prog-cur">${NF(cur)}</span>
+        <span class="prog-max">/ ${NF(p.max)} ${p.unit}</span>
+        <span class="prog-pct">${pct}%</span>
+      </div>
+      <div class="track">
+        <div class="fill" style="width:${pct}%;background:linear-gradient(90deg,${ac},color-mix(in srgb,${ac} 55%,white))"></div>
+        ${ticks}
+      </div>
+      <div class="rewards">${rws}</div>
+    </div>
+    <button class="card-expand-btn" onclick="toggleExpand('${p.id}')">
+      <span class="expand-label">
+        ${done?'<span style="color:var(--green)">✓ Complete</span>':expandLabel}
+      </span>
+      <span class="expand-chevron ${isExp?'open':''}">▾</span>
+    </button>
+    <div class="missions-wrap ${isExp?'open':''}" id="mw-${p.id}">
+      ${missContent}
+      <div class="notes-section">
+        <textarea class="notes-in" placeholder="Notes — next target, tips..." onchange="setNote('${p.id}',this.value)">${note}</textarea>
+      </div>
+    </div>
+  </div>`;
+}
+
+function getList(){
+  if(filter==='incomplete') return PROGS.filter(p=>!isDone(p));
+  if(filter==='all') return PROGS;
+  return PROGS.filter(p=>p.type===filter);
+}
+
+function render(){
+  const list=getList(),el=document.getElementById('scroll');
+  const order=['wbc','xp','themed','multi','corner','affinity'];
+  if(filter==='all'){
+    const g={};list.forEach(p=>{(g[p.type]=g[p.type]||[]).push(p);});
+    el.innerHTML=order.filter(t=>g[t]).map(t=>`<div class="sec-head">${TL[t]} (${g[t].length})</div>${g[t].map(renderCard).join('')}`).join('');
+  } else {
+    el.innerHTML=list.map(renderCard).join('');
+  }
+  updateH();
+}
+
+function updateH(){
+  document.getElementById('h-prog').textContent=PROGS.length;
+  document.getElementById('h-done').textContent=PROGS.filter(p=>isDone(p)).length;
+  document.getElementById('h-miss').textContent=Object.values(checked).filter(Boolean).length;
+}
+
+function toggleExpand(id){
+  expanded[id]=!expanded[id];save();
+  const mw=document.getElementById('mw-'+id);
+  const btn=mw?.previousElementSibling?.querySelector('.expand-chevron');
+  if(mw) mw.classList.toggle('open',expanded[id]);
+  if(btn) btn.classList.toggle('open',expanded[id]);
+}
+
+function toggle(pid,mid){const k=pid+'|'+mid;checked[k]=!checked[k];save();refreshCard(pid);updateH();}
+function setXP(id,v){const p=PROGS.find(x=>x.id===id);xpv[id]=Math.max(0,Math.min(parseInt(v)||0,p?.max||999999));save();refreshCard(id);updateH();}
+function addXP(id,a){const p=PROGS.find(x=>x.id===id);xpv[id]=Math.min((xpv[id]||0)+a,p?.max||999999);save();refreshCard(id);updateH();}
+function setNote(id,v){notes[id]=v;save();}
+
+function refreshCard(id){
+  const p=PROGS.find(x=>x.id===id);if(!p)return;
+  const el=document.getElementById('card-'+id);if(!el)return;
+  const t=document.createElement('div');t.innerHTML=renderCard(p);el.replaceWith(t.firstElementChild);
+}
+
+function setF(f,btn){
+  filter=f;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  if(btn){
+    if(btn.classList.contains('chip')) btn.classList.add('on');
+    if(btn.classList.contains('tab')) btn.classList.add('on');
+  }
+  // sync chip + tab
+  const chipMap={'all':0,'wbc':1,'xp':2,'affinity':3,'incomplete':4};
+  const tabMap={'all':0,'wbc':1,'xp':2,'affinity':3,'incomplete':4};
+  const chips=document.querySelectorAll('.chip');
+  const tabs=document.querySelectorAll('.tab');
+  const chipIdx=['all','wbc','xp','affinity','themed','multi','incomplete'].indexOf(f);
+  const tabIdx=['all','wbc','xp','affinity','incomplete'].indexOf(f);
+  if(chipIdx>=0) chips[chipIdx]?.classList.add('on');
+  if(tabIdx>=0) tabs[tabIdx]?.classList.add('on');
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
