@@ -506,6 +506,22 @@ body {
 /* CHECK MARK SVG */
 .chk-svg { display: none; }
 .mission.dm .chk-svg { display: block; }
+
+.gm-progress-wrap{padding:8px 14px 10px;border-top:0.5px solid var(--border);background:var(--bg3);}
+.gm-progress-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.gm-num-in{font-size:14px;font-weight:600;font-family:-apple-system,system-ui;width:70px;padding:6px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--white);outline:none;text-align:center;font-variant-numeric:tabular-nums;-webkit-appearance:none;}
+.gm-num-in:focus{border-color:var(--amber);}
+.gm-goal-lbl{font-size:12px;color:var(--muted);font-weight:500;}
+.gm-bar-wrap{display:flex;align-items:center;gap:8px;}
+.gm-bar-track{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.gm-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--amber),#fbbf24);transition:width 0.3s ease;}
+.gm-bar-fill.done{background:linear-gradient(90deg,var(--green),#4ade80);}
+.gm-pct-lbl{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--amber);min-width:34px;text-align:right;}
+.gm-pct-lbl.done{color:var(--green);}
+.gm-quick-row{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
+.gm-qb{font-size:11px;font-weight:600;font-family:inherit;padding:5px 10px;border-radius:7px;border:0.5px solid var(--border);background:var(--bg2);color:var(--muted);cursor:pointer;min-height:30px;}
+.gm-qb:active{background:var(--border);}
+.gm-qb.done-btn{color:var(--green);border-color:rgba(34,197,94,.3);}
 </style>
 </head>
 <body>
@@ -531,6 +547,7 @@ body {
     <div class="chip" onclick="setF('themed',this)">Themed</div>
     <div class="chip" onclick="setF('multi',this)">Multiplayer</div>
     <div class="chip" onclick="setF('incomplete',this)">In Progress</div>
+    <div class="chip" onclick="setF('grind',this)">⚡ My Grind</div>
   </div>
 
   <!-- SCROLL AREA -->
@@ -559,6 +576,10 @@ body {
   <div class="tab" onclick="setF('incomplete',null)">
     <div class="tab-icon">📋</div>
     <div class="tab-lbl">Active</div>
+  </div>
+  <div class="tab" onclick="setF('grind',null)">
+    <div class="tab-icon">⚡</div>
+    <div class="tab-lbl">My Grind</div>
   </div>
 </div>
 
@@ -648,8 +669,11 @@ let checked=JSON.parse(localStorage.getItem('ddp26c')||'{}');
 let xpv=JSON.parse(localStorage.getItem('ddp26x')||'{}');
 let notes=JSON.parse(localStorage.getItem('ddp26n')||'{}');
 let expanded=JSON.parse(localStorage.getItem('ddp26e')||'{}');
+let pinnedProgs=JSON.parse(localStorage.getItem('ddp26pp')||'{}');
+let pinnedMissions=JSON.parse(localStorage.getItem('ddp26pm')||'{}');
+let missionProg=JSON.parse(localStorage.getItem('ddp26mp')||'{}');
 let filter='all';
-const save=()=>{localStorage.setItem('ddp26c',JSON.stringify(checked));localStorage.setItem('ddp26x',JSON.stringify(xpv));localStorage.setItem('ddp26n',JSON.stringify(notes));localStorage.setItem('ddp26e',JSON.stringify(expanded));};
+const save=()=>{localStorage.setItem('ddp26c',JSON.stringify(checked));localStorage.setItem('ddp26x',JSON.stringify(xpv));localStorage.setItem('ddp26n',JSON.stringify(notes));localStorage.setItem('ddp26e',JSON.stringify(expanded));localStorage.setItem('ddp26pp',JSON.stringify(pinnedProgs));localStorage.setItem('ddp26pm',JSON.stringify(pinnedMissions));localStorage.setItem('ddp26mp',JSON.stringify(missionProg));};
 
 function calcProg(p){
   if(p.unit==='xp') return Math.min(xpv[p.id]||0,p.max);
@@ -705,7 +729,7 @@ function renderCard(p){
       </div>
     </div>`;
   } else {
-    missContent=p.groups.map(g=>`<div class="mg"><div class="mg-lbl">${g.lbl}</div>${g.ms.map(m=>{const k=p.id+'|'+m.id,c=checked[k],hp=!!m.pts;return`<div class="mission ${c?'dm':''}" onclick="${hp?`toggle('${p.id}','${m.id}')`:''}" style="${!hp?'cursor:default':''}"><div class="m-chk">${c?CHK:''}</div><div class="m-lbl">${m.label}${m.rep?'<span class="m-rep">REPEATABLE</span>':''}</div>${hp?`<div class="m-pts">+${m.pts}pts</div>`:''}</div>`;}).join('')}</div>`).join('');
+    missContent=p.groups.map(g=>`<div class="mg"><div class="mg-lbl">${g.lbl}</div>${g.ms.map(m=>{const k=p.id+'|'+m.id,c=checked[k],hp=!!m.pts;const mpk=p.id+'||'+m.id,mpin=pinnedMissions[mpk];return`<div class="mission ${c?'dm':''}" onclick="${hp?`toggle('${p.id}','${m.id}')`:''}" style="${!hp?'cursor:default':''}"><div class="m-chk">${c?CHK:''}</div><div class="m-lbl">${m.label}${m.rep?'<span class="m-rep">REPEATABLE</span>':''}</div>${hp?`<div class="m-pts">+${m.pts}pts</div>`:''}${hp?`<div class="m-pin ${mpin?'pinned':''}" onclick="event.stopPropagation();toggleMissionPin('${p.id}','${m.id}')">📌</div>`:''}</div>`;}).join('')}</div>`).join('');
   }
 
   const note=notes[p.id]||'';
@@ -715,11 +739,12 @@ function renderCard(p){
     <div class="card-header">
       <div class="card-accent" style="background:${ac}"></div>
       <div class="card-top-row">
-        <div>
+        <div style="flex:1">
           <div class="card-name">${p.name}</div>
           ${p.sub?`<div class="card-sub-text">${p.sub}</div>`:''}
         </div>
         <span class="badge b-${p.type}">${TL[p.type]}</span>
+        <div class="pin-btn ${pinnedProgs[p.id]?'pinned':''}" onclick="togglePin('${p.id}')" title="Track this program">📌</div>
       </div>
       <div class="prog-row">
         <span class="prog-cur">${NF(cur)}</span>
@@ -754,6 +779,7 @@ function getList(){
 }
 
 function render(){
+  if(filter==='grind'){renderGrind();updateH();return;}
   const list=getList(),el=document.getElementById('scroll');
   const order=['wbc','xp','themed','multi','corner','affinity'];
   if(filter==='all'){
@@ -803,12 +829,157 @@ function setF(f,btn){
   const tabMap={'all':0,'wbc':1,'xp':2,'affinity':3,'incomplete':4};
   const chips=document.querySelectorAll('.chip');
   const tabs=document.querySelectorAll('.tab');
-  const chipIdx=['all','wbc','xp','affinity','themed','multi','incomplete'].indexOf(f);
-  const tabIdx=['all','wbc','xp','affinity','incomplete'].indexOf(f);
+  const chipIdx=['all','wbc','xp','affinity','themed','multi','incomplete','grind'].indexOf(f);
+  const tabIdx=['all','wbc','xp','affinity','incomplete','grind'].indexOf(f);
   if(chipIdx>=0) chips[chipIdx]?.classList.add('on');
   if(tabIdx>=0) tabs[tabIdx]?.classList.add('on');
   render();
 }
+
+function togglePin(id){pinnedProgs[id]=!pinnedProgs[id];save();refreshCard(id);updateH();}
+function toggleMissionPin(pid,mid){const k=pid+'||'+mid;pinnedMissions[k]=!pinnedMissions[k];save();refreshCard(pid);}
+
+function gmProgressHTML(pid, mid, m){
+  const mk = pid+'||'+mid;
+  const cur = missionProg[mk] || 0;
+  // Try to parse goal number from mission label
+  const goalMatch = m.label.match(/(\d+)/);
+  const goal = goalMatch ? parseInt(goalMatch[0]) : null;
+  const pct = goal ? Math.min(100, Math.round(cur/goal*100)) : 0;
+  const done = checked[pid+'|'+mid];
+
+  let quickBtns = '';
+  if(goal){
+    const increments = goal<=5?[1]:goal<=20?[1,5]:goal<=50?[5,10]:goal<=100?[10,25]:[10,25,50];
+    quickBtns = increments.map(n=>`<button class="gm-qb" onclick="setMProg('${pid}','${mid}',${n},${goal})">+${n}</button>`).join('');
+    quickBtns += `<button class="gm-qb done-btn" onclick="setMProg('${pid}','${mid}',${goal},${goal})">Done ✓</button>`;
+  }
+
+  return `<div class="gm-progress-wrap">
+    <div class="gm-progress-row">
+      <input class="gm-num-in" type="number" inputmode="numeric" min="0" ${goal?'max="'+goal+'"':''} value="${cur}" placeholder="0"
+        oninput="setMProgInput('${pid}','${mid}',this.value,${goal||0})">
+      ${goal?`<span class="gm-goal-lbl">of ${goal}</span>`:''}
+    </div>
+    ${goal?`<div class="gm-bar-wrap">
+      <div class="gm-bar-track"><div class="gm-bar-fill ${pct>=100?'done':''}" style="width:${pct}%" id="gmb-${pid}-${mid}"></div></div>
+      <span class="gm-pct-lbl ${pct>=100?'done':''}" id="gmp-${pid}-${mid}">${pct>=100?'✓ Done':pct+'%'}</span>
+    </div>`:''}
+    ${quickBtns?`<div class="gm-quick-row">${quickBtns}</div>`:''}
+  </div>`;
+}
+
+function setMProg(pid,mid,add,goal){
+  const mk=pid+'||'+mid;
+  missionProg[mk]=Math.min((missionProg[mk]||0)+add,goal);
+  if(goal&&missionProg[mk]>=goal&&!checked[pid+'|'+mid]){checked[pid+'|'+mid]=true;}
+  save();renderGrind();
+}
+function setMProgInput(pid,mid,val,goal){
+  const mk=pid+'||'+mid;
+  missionProg[mk]=Math.max(0,goal?Math.min(parseInt(val)||0,goal):parseInt(val)||0);
+  if(goal&&missionProg[mk]>=goal&&!checked[pid+'|'+mid]){checked[pid+'|'+mid]=true;}
+  save();
+  // update bar without full re-render
+  const pct=goal?Math.min(100,Math.round(missionProg[mk]/goal*100)):0;
+  const bar=document.getElementById('gmb-'+pid+'-'+mid);
+  const lbl=document.getElementById('gmp-'+pid+'-'+mid);
+  if(bar){bar.style.width=pct+'%';bar.classList.toggle('done',pct>=100);}
+  if(lbl){lbl.textContent=pct>=100?'✓ Done':pct+'%';lbl.classList.toggle('done',pct>=100);}
+}
+
+function renderGrind(){
+  const el=document.getElementById('scroll');
+  const pinnedProgIds=Object.keys(pinnedProgs).filter(id=>pinnedProgs[id]);
+  const pinnedMissionKeys=Object.keys(pinnedMissions).filter(k=>pinnedMissions[k]);
+
+  // Build a list: pinned programs (show all their pinned missions + progress)
+  // Plus any pinned missions from non-pinned programs
+  const blocks=[];
+
+  // All pinned programs
+  pinnedProgIds.forEach(pid=>{
+    const p=PROGS.find(x=>x.id===pid);if(!p)return;
+    const cur=calcProg(p),pct=Math.min(100,Math.round(cur/p.max*100));
+    const ac=AC[p.type]||'#60a5fa';
+    // Get pinned missions for this prog
+    const progPinnedMs=pinnedMissionKeys.filter(k=>k.startsWith(pid+'||')).map(k=>k.split('||')[1]);
+    let missHTML='';
+    if(progPinnedMs.length){
+      p.groups.forEach(g=>g.ms.forEach(m=>{
+        if(!progPinnedMs.includes(m.id)||!m.pts)return;
+        const c=checked[pid+'|'+m.id];
+        missHTML+=`<div>
+          <div class="grind-mission ${c?'dm':''}" onclick="toggle('${pid}','${m.id}');renderGrind()">
+            <div class="m-chk">${c?CHK:''}</div>
+            <div class="gm-lbl">${m.label}</div>
+            <div class="gm-pts">+${m.pts}pts</div>
+          </div>
+          ${gmProgressHTML(pid,m.id,m)}
+        </div>`;
+      }));
+    } else {
+      // Show all incomplete missions with pts
+      let shown=0;
+      p.groups.forEach(g=>g.ms.forEach(m=>{
+        if(!m.pts||checked[pid+'|'+m.id]||shown>=5)return;
+        shown++;
+        missHTML+=`<div>
+          <div class="grind-mission" onclick="toggle('${pid}','${m.id}');renderGrind()">
+            <div class="m-chk"></div>
+            <div class="gm-lbl">${m.label}</div>
+            <div class="gm-pts">+${m.pts}pts</div>
+          </div>
+          ${gmProgressHTML(pid,m.id,m)}
+        </div>`;
+      }));
+    }
+    blocks.push(`<div class="grind-prog-block">
+      <div class="grind-prog-header" style="border-left:3px solid ${ac};padding-left:11px">
+        <div class="grind-prog-name">${p.name}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:5px">
+          <div class="track" style="flex:1;height:4px"><div class="fill" style="width:${pct}%;background:linear-gradient(90deg,${ac},color-mix(in srgb,${ac} 55%,white))"></div></div>
+          <span style="font-size:12px;font-weight:700;color:var(--amber);font-variant-numeric:tabular-nums">${pct}%</span>
+        </div>
+      </div>
+      ${missHTML||'<div style="padding:10px 14px;font-size:12px;color:var(--muted)">All missions complete or none pinned.</div>'}
+    </div>`);
+  });
+
+  // Pinned missions from non-pinned programs
+  const orphanMs=pinnedMissionKeys.filter(k=>{const pid=k.split('||')[0];return !pinnedProgs[pid];});
+  if(orphanMs.length){
+    let orphanHTML='';
+    orphanMs.forEach(k=>{
+      const [pid,mid]=k.split('||');
+      const p=PROGS.find(x=>x.id===pid);if(!p)return;
+      let m;p.groups.forEach(g=>g.ms.forEach(x=>{if(x.id===mid)m=x;}));
+      if(!m||!m.pts)return;
+      const c=checked[pid+'|'+mid];
+      orphanHTML+=`<div>
+        <div class="grind-mission ${c?'dm':''}" onclick="toggle('${pid}','${mid}');renderGrind()">
+          <div class="m-chk">${c?CHK:''}</div>
+          <div class="gm-lbl">${m.label}</div>
+          <span class="gm-prog-tag">${p.name}</span>
+          <div class="gm-pts">+${m.pts}pts</div>
+        </div>
+        ${gmProgressHTML(pid,mid,m)}
+      </div>`;
+    });
+    if(orphanHTML) blocks.push(`<div class="grind-prog-block"><div class="grind-prog-header"><div class="grind-prog-name">📌 Pinned Tasks</div></div>${orphanHTML}</div>`);
+  }
+
+  if(!blocks.length){
+    el.innerHTML=`<div class="grind-empty">
+      <div class="grind-empty-icon">📌</div>
+      <div class="grind-empty-title">Nothing tracked yet</div>
+      <div class="grind-empty-sub">Tap the 📌 icon on any program or individual mission to add it to your grind list.</div>
+    </div>`;
+  } else {
+    el.innerHTML=blocks.join('');
+  }
+}
+
 
 render();
 </script>
